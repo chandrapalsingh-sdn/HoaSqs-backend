@@ -15,6 +15,17 @@ def create_job(request):
     send_job_to_queue(job.id, job.text)
     return Response({"job_id": str(job.id)})
 
+@api_view(["POST"])
+def update_status(request, job_id):
+    job = get_object_or_404(Job, id=job_id)
+    new_status = request.data.get("status")
+    if new_status not in ["pending", "running", "done", "failed"]:
+        return Response({"error": "Invalid status"}, status=400)
+    job.status = new_status
+    job.save()
+    return Response({"job_id": str(job.id), "status": job.status})
+
+
 @api_view(["GET"])
 def job_status(request, job_id):
     job = get_object_or_404(Job, id=job_id)
